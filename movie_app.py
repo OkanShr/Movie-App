@@ -2,8 +2,8 @@ import random
 import requests
 from istorage import IStorage
 
-# This is the API key you got from OMDb, but it doesn't work
-OMDB_API_KEY = '853b022f'
+
+OMDB_API_KEY = "853b022f"
 
 
 class MovieApp:
