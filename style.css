@@ -5,11 +5,17 @@ body {
 }
 
 .list-movies-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 10px 0;
   background: #009B50;
   color: white;
-  text-align: center;
   font-size: 16pt;
+}
+
+.list-movies-title img {
+    padding-right: 10px;
 }
 
 .movie-grid {
@@ -22,7 +28,7 @@ body {
 }
 
 .movie-grid li {
-  padding: 10px 15px;
+  padding: 5px 15px;
   text-align: left;
 }
 

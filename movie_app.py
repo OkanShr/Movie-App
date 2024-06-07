@@ -56,8 +56,8 @@ class MovieApp:
         """
         try:
             response = requests.get(f"http://www.omdbapi.com/?"
-                                    f"t={title}"
-                                    f"&apikey={OMDB_API_KEY}")
+                                    f"apikey={OMDB_API_KEY}&"
+                                    f"t={title}")
             if response.status_code == 200:
                 data = response.json()
                 if data['Response'] == 'True':
@@ -95,7 +95,7 @@ class MovieApp:
         movies = self._storage.list_movies()
         print(f"{len(movies)} movies in total")
         for title, details in movies.items():
-            print(f"{title} ({details['year']}): {details['rating']:.1f}")
+            print(f"{title} ({details['year']}): {details['rating']}")
 
     def _command_movie_stats(self):
         """
@@ -106,7 +106,7 @@ class MovieApp:
         """
         try:
             movies = self._storage.list_movies()
-            ratings = [details['rating'] for details in movies.values()]
+            ratings = [float(details['rating']) for details in movies.values()]
 
             avg_rating = sum(ratings) / len(ratings)
             print(f"Average rating: {avg_rating:.1f}")
@@ -122,14 +122,14 @@ class MovieApp:
 
             best_rating = max(ratings)
             best_movies = [title for title, details in movies.items()
-                           if details['rating'] == best_rating]
+                           if details['rating'] == str(best_rating)]
             print("Best movie(s) by rating:")
             for movie in best_movies:
                 print(f"{movie} ({best_rating})")
 
             worst_rating = min(ratings)
             worst_movies = [title for title, details in movies.items()
-                            if details['rating'] == worst_rating]
+                            if details['rating'] == str(worst_rating)]
             print("Worst movie(s) by rating:")
             for movie in worst_movies:
                 print(f"{movie} ({worst_rating})")
@@ -145,7 +145,7 @@ class MovieApp:
             if movies:
                 title, details = random.choice(list(movies.items()))
                 print(f"Random movie: {title} ({details['year']}), "
-                      f"{details['rating']:.1f}")
+                      f"{details['rating']}")
             else:
                 print("No movies in the database.")
         except ValueError as error:
@@ -176,22 +176,26 @@ class MovieApp:
                                    key=lambda x: x[1]['rating'], reverse=True)
             print("Movies sorted by rating:")
             for title, details in sorted_movies:
-                print(f"{title}, {details['rating']:.1f}")
+                print(f"{title}, {details['rating']}")
         except ValueError as error:
             print("An error occurred:", error)
 
     def _command_print_sorted_movies_by_year(self):
         """
-        Command to print all movies in the database sorted by year.
+        Command to print all movies in the database sorted by year.(Newest
+        First)
         """
         try:
             movies = self._storage.list_movies()
-            sorted_movies = sorted(movies.items(), key=lambda x: x[1]['year'])
+            sorted_movies = sorted(movies.items(), key=lambda x: x[1]['year'],
+                                   reverse=True)
             print("Movies sorted by year:")
             for title, details in sorted_movies:
-                print(f"{title} ({details['year']}), {details['rating']:.1f}")
+                print(f"{title} ({details['year']}), {details['rating']}")
         except ValueError as error:
             print("An error occurred:", error)
+        except Exception as e:
+            print("An unexpected error occurred:", e)
 
     def _command_filter_movies(self):
         """
@@ -214,18 +218,21 @@ class MovieApp:
 
             filtered_movies = {}
             for title, details in movies.items():
-                if (min_rating is None or details['rating'] >= min_rating) \
-                        and (start_year is None or
-                             details['year'] >= start_year) and \
-                        (end_year is None or details['year'] <= end_year):
+                if (min_rating is None or float(details['rating']) >=
+                    min_rating) and (start_year is None or
+                                     float(details['year']) >= start_year) \
+                        and (end_year is None or float(details['year']) <=
+                             end_year):
                     filtered_movies[title] = details
+            if len(filtered_movies) > 0:
+                print("\nFiltered Movies:")
+                for title, details in filtered_movies.items():
+                    print(f"{title} ({details['year']}), "
+                          f"Rating: {details['rating']}")
 
-            print("\nFiltered Movies:")
-            for title, details in filtered_movies.items():
-                print(f"{title} ({details['year']}), "
-                      f"Rating: {details['rating']:.1f}")
-
-            return filtered_movies
+                return filtered_movies
+            else:
+                print("No movies found for this filter")
         except ValueError:
             print("Invalid input. Please enter valid numbers for "
                   "rating and years.")
@@ -235,8 +242,40 @@ class MovieApp:
         """
         Generates a website based on the movies in the database.
         """
-        # Placeholder method for future implementation
-        pass
+        try:
+            with open("./_static/index_template.html",
+                      "r") as template_file_obj:
+                template_file = template_file_obj.read()
+        except FileNotFoundError as e:
+            print("Template file not found:", e)
+            return
+        except Exception as e:
+            print("An error occurred while reading the template file:", e)
+            return
+
+        try:
+            movie_grid = self._generate_movies_grid()
+            with open("index.html", "w") as new_file_obj:
+                new_file_obj.write(
+                    template_file.replace("__TEMPLATE_MOVIE_GRID__",
+                                          movie_grid))
+            print("Website Generated Successfully")
+        except Exception as e:
+            print("An error occurred while writing the new file:", e)
+
+    def _generate_movies_grid(self):
+        movies = self._storage.list_movies()
+        movie_grid = ""
+        for title, details in movies.items():
+            movie_grid += (
+                "<div class='movie'>\n"
+                f"<img src='{details['poster']}' alt='{title} poster' "
+                f"class='movie-poster'>\n"
+                f"<li class='movie-title'>{title}</li>\n"
+                f"<li class='movie-year'>{details['year']}</li>\n"
+                "</div>\n"
+            )
+        return movie_grid
 
     def run(self):
         """
@@ -257,6 +296,7 @@ class MovieApp:
             print("8. Movies sorted by rating")
             print("9. Movies sorted by year")
             print("10. Filter Movies")
+            print("11. Generate Website")
             choice = input("Enter your choice: ")
 
             try:
@@ -284,6 +324,8 @@ class MovieApp:
                     self._command_print_sorted_movies_by_year()
                 elif choice == 10:
                     self._command_filter_movies()
+                elif choice == 11:
+                    self._generate_website()
                 else:
                     print("Invalid choice. Please enter a number "
                           "between 0 and 10.")

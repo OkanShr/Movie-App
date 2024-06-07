@@ -1,7 +1,12 @@
 {
-    "Titanic": {
-        "year": 1992,
-        "rating": 9.5,
-        "poster": "URL"
+    "Inception": {
+        "year": "2010",
+        "rating": "8.8",
+        "poster": "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg"
+    },
+    "The Lord of the Rings: The Fellowship of the Ring": {
+        "year": "2001",
+        "rating": "8.9",
+        "poster": "https://m.media-amazon.com/images/M/MV5BN2EyZjM3NzUtNWUzMi00MTgxLWI0NTctMzY4M2VlOTdjZWRiXkEyXkFqcGdeQXVyNDUzOTQ5MjY@._V1_SX300.jpg"
     }
 }
