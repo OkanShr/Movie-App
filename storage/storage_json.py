@@ -1,12 +1,20 @@
 import json
-from istorage import IStorage
-
-MOVIE_DATA_FILE = "data.json"
+from storage.istorage import IStorage
 
 
 class StorageJson(IStorage):
     def __init__(self, file_path):
         self.file_path = file_path
+
+    def check_if_exists(self, title):
+        """
+        Checks if the Movie name exists in the database.
+
+        :param title: Title of the movie to check.
+        :return: True if the movie exists, False otherwise.
+        """
+        movies = self.load_data()
+        return title in movies
 
     def load_data(self):
         """

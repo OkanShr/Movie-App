@@ -1,9 +1,12 @@
 import random
 import requests
-from istorage import IStorage
+import os
+from dotenv import load_dotenv
+from storage.istorage import IStorage
 
+load_dotenv()
 
-OMDB_API_KEY = "853b022f"
+OMDB_API_KEY = os.getenv('OMDB_API_KEY')
 
 
 class MovieApp:
@@ -31,6 +34,9 @@ class MovieApp:
         it to storage.
         """
         title = input("Enter new movie name: ")
+        if self._storage.check_if_exists(title):
+            print(f"Movie {title} already exists")
+            return
         movie_data = self._fetch_movie_data(title)
         if movie_data:
             self._storage.add_movie(movie_data["Title"],
@@ -75,18 +81,24 @@ class MovieApp:
         Command to delete a movie from the database.
         """
         title = input("Enter movie name to delete: ")
-        self._storage.delete_movie(title)
-        print(f"Movie {title} deleted.")
+        if self._storage.check_if_exists(title):
+            self._storage.delete_movie(title)
+            print(f"Movie {title} deleted.")
+        else:
+            print(f"Movie {title} doesn't exist.")
 
     def _command_update_movie(self):
         """
         Command to update a movie's information in the database.
         """
         title = input("Enter movie name to update: ")
-        year = int(input("Enter new year of release: "))
-        rating = float(input("Enter new rating (1-10): "))
-        self._storage.update_movie(title, year, rating)
-        print(f"Movie {title} updated.")
+        if self._storage.check_if_exists(title):
+            year = int(input("Enter new year of release: "))
+            rating = float(input("Enter new rating (1-10): "))
+            self._storage.update_movie(title, year, rating)
+            print(f"Movie {title} updated.")
+        else:
+            print(f"Movie {title} doesn't exist.")
 
     def _command_list_movies(self):
         """

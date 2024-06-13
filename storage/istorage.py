@@ -1,12 +1,16 @@
 from abc import ABC, abstractmethod
 
-MOVIE_DATA_FILE = "data.json"
-
 
 class IStorage(ABC):
     """
     CRUD Interface for StorageJson
     """
+    @abstractmethod
+    def check_if_exists(self, title):
+        """
+        Method to check if Movie exists in db
+        """
+
     @abstractmethod
     def list_movies(self):
         """
